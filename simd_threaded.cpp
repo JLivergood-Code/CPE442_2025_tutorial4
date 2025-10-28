@@ -6,7 +6,9 @@
 #include <algorithm>
 #include <math.h>
 #include <arm_neon.h>
+#include <chrono>
 
+using namespace std::chrono;
 
 const int NUM_THREADS = 4; //Num Threads
 
@@ -60,6 +62,8 @@ static inline void convolve3x3_rowptr(const cv::Mat& src, cv::Mat& dst,
     const int rows = src.rows, cols = src.cols;
     const int ys = std::max(border, yStart); // Starting row, max to prevent clipping
     const int ye = std::min(rows - border, yEnd); // Ending row, min to prevent clipping
+
+    auto start = high_resolution_clock::now();
 
     // Load the 3x3 kernel into NEON float32x4_t vectors
     float32x4_t k0 = vld1q_dup_f32(&kernel[0]); // broadcasted single-element loads
@@ -150,12 +154,18 @@ static inline void convolve3x3_rowptr(const cv::Mat& src, cv::Mat& dst,
             out[x] = sum;
         }
     }
+
+    auto end = high_resolution_clock::now();
+    auto duration = duration_cast<milliseconds>(end - start).count();
+    std::cout << "Convolve stage took " << duration << " ms\n";
 }
 
 static inline void grayscale_calculation(const cv::Mat& bgr, cv::Mat& gray,int yStart, int yEnd){
     const int rows = bgr.rows, cols = bgr.cols;
     const int ys = std::max(0, yStart);
     const int ye = std::min(rows, yEnd);
+
+    auto start = high_resolution_clock::now();
 
     for (int y = ys; y < ye; ++y) {
         const uchar* in = bgr.ptr<uchar>(y);
@@ -188,6 +198,10 @@ static inline void grayscale_calculation(const cv::Mat& bgr, cv::Mat& gray,int y
             out[x] = static_cast<uchar>((R*77 + G*150 + B*29 + 128) >> 8);
         }
     }
+
+    auto end = high_resolution_clock::now();
+    auto duration = duration_cast<milliseconds>(end - start).count();
+    std::cout << "Grayscale stage took " << duration << " ms\n";
 }
 
 
