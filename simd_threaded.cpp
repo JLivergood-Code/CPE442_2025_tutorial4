@@ -10,11 +10,13 @@
 
 using namespace std::chrono;
 
+
+
 const int NUM_THREADS = 4; //Num Threads
 
 // Sobel Filter Kernel
-static float SOBEL_X_KERNEL[9] = { -1,0,1, -2,0,2, -1,0,1 };
-static float SOBEL_Y_KERNEL[9] = { -1,-2,-1, 0,0,0, 1,2,1 };
+static int16_t SOBEL_X_KERNEL[9] = { -1,0,1, -2,0,2, -1,0,1 };
+static int16_t SOBEL_Y_KERNEL[9] = { -1,-2,-1, 0,0,0, 1,2,1 };
 
 // All great things start with an FSM 
 enum class ComputeStages: int {GRAY_SCALE = 0, SOBEL_X = 1, SOBEL_Y  = 2, MAGNITUDE = 3, STOP = 4}; 
@@ -57,7 +59,7 @@ static inline void magnitude(const cv::Mat& gx32f, const cv::Mat& gy32f, cv::Mat
 }
 
 static inline void convolve3x3_rowptr(const cv::Mat& src, cv::Mat& dst,
-                                      const float kernel[9], int yStart, int yEnd){
+                                      const int16_t kernel[9], int yStart, int yEnd){
     const int border = 1;
     const int rows = src.rows, cols = src.cols;
     const int ys = std::max(border, yStart); // Starting row, max to prevent clipping
@@ -66,15 +68,15 @@ static inline void convolve3x3_rowptr(const cv::Mat& src, cv::Mat& dst,
     auto start = high_resolution_clock::now();
 
     // Load the 3x3 kernel into NEON float32x4_t vectors
-    float32x4_t k0 = vld1q_dup_f32(&kernel[0]); // broadcasted single-element loads
-    float32x4_t k1 = vld1q_dup_f32(&kernel[1]);
-    float32x4_t k2 = vld1q_dup_f32(&kernel[2]);
-    float32x4_t k3 = vld1q_dup_f32(&kernel[3]);
-    float32x4_t k4 = vld1q_dup_f32(&kernel[4]);
-    float32x4_t k5 = vld1q_dup_f32(&kernel[5]);
-    float32x4_t k6 = vld1q_dup_f32(&kernel[6]);
-    float32x4_t k7 = vld1q_dup_f32(&kernel[7]);
-    float32x4_t k8 = vld1q_dup_f32(&kernel[8]);
+    int16x8_t k0 = vld1q_dup_s16(&kernel[0]); // broadcasted single-element loads
+    int16x8_t k1 = vld1q_dup_s16(&kernel[1]);
+    int16x8_t k2 = vld1q_dup_s16(&kernel[2]);
+    int16x8_t k3 = vld1q_dup_s16(&kernel[3]);
+    int16x8_t k4 = vld1q_dup_s16(&kernel[4]);
+    int16x8_t k5 = vld1q_dup_s16(&kernel[5]);
+    int16x8_t k6 = vld1q_dup_s16(&kernel[6]);
+    int16x8_t k7 = vld1q_dup_s16(&kernel[7]);
+    int16x8_t k8 = vld1q_dup_s16(&kernel[8]);
 
     for (int y = ys; y < ye; ++y) {
         const uchar* prev = src.ptr<uchar>(y - 1);
@@ -85,64 +87,51 @@ static inline void convolve3x3_rowptr(const cv::Mat& src, cv::Mat& dst,
         int x = border;
         for (; x <= cols - border - 8; x += 8) {
             // Load 8 uint8 pixels from each row (shifted appropriately)
-            uint8x8_t p0 = vld1_u8(prev + x - 1);
-            uint8x8_t p1 = vld1_u8(prev + x);
-            uint8x8_t p2 = vld1_u8(prev + x + 1);
+            uint8x8_t p0_u8 = vld1_u8(prev + x - 1);
+            uint8x8_t p1_u8 = vld1_u8(prev + x);
+            uint8x8_t p2_u8 = vld1_u8(prev + x + 1);
 
-            uint8x8_t c0 = vld1_u8(curr + x - 1);
-            uint8x8_t c1 = vld1_u8(curr + x);
-            uint8x8_t c2 = vld1_u8(curr + x + 1);
+            uint8x8_t c0_u8 = vld1_u8(curr + x - 1);
+            uint8x8_t c1_u8 = vld1_u8(curr + x);
+            uint8x8_t c2_u8 = vld1_u8(curr + x + 1);
 
-            uint8x8_t n0 = vld1_u8(next + x - 1);
-            uint8x8_t n1 = vld1_u8(next + x);
-            uint8x8_t n2 = vld1_u8(next + x + 1);
+            uint8x8_t n0_u8 = vld1_u8(next + x - 1);
+            uint8x8_t n1_u8 = vld1_u8(next + x);
+            uint8x8_t n2_u8 = vld1_u8(next + x + 1);
 
-            // Convert to float32 (via uint16 -> uint32 -> float)
-            float32x4_t f0 = vcvtq_f32_u32(vmovl_u16(vget_low_u16(vmovl_u8(p0))));
-            float32x4_t f1 = vcvtq_f32_u32(vmovl_u16(vget_low_u16(vmovl_u8(p1))));
-            float32x4_t f2 = vcvtq_f32_u32(vmovl_u16(vget_low_u16(vmovl_u8(p2))));
-            float32x4_t f3 = vcvtq_f32_u32(vmovl_u16(vget_low_u16(vmovl_u8(c0))));
-            float32x4_t f4 = vcvtq_f32_u32(vmovl_u16(vget_low_u16(vmovl_u8(c1))));
-            float32x4_t f5 = vcvtq_f32_u32(vmovl_u16(vget_low_u16(vmovl_u8(c2))));
-            float32x4_t f6 = vcvtq_f32_u32(vmovl_u16(vget_low_u16(vmovl_u8(n0))));
-            float32x4_t f7 = vcvtq_f32_u32(vmovl_u16(vget_low_u16(vmovl_u8(n1))));
-            float32x4_t f8 = vcvtq_f32_u32(vmovl_u16(vget_low_u16(vmovl_u8(n2))));
+            // Widen to signed 16-bit for convolution
+            int16x8_t p0 = vreinterpretq_s16_u16(vmovl_u8(p0_u8));
+            int16x8_t p1 = vreinterpretq_s16_u16(vmovl_u8(p1_u8));
+            int16x8_t p2 = vreinterpretq_s16_u16(vmovl_u8(p2_u8));
+            int16x8_t c0 = vreinterpretq_s16_u16(vmovl_u8(c0_u8));
+            int16x8_t c1 = vreinterpretq_s16_u16(vmovl_u8(c1_u8));
+            int16x8_t c2 = vreinterpretq_s16_u16(vmovl_u8(c2_u8));
+            int16x8_t n0 = vreinterpretq_s16_u16(vmovl_u8(n0_u8));
+            int16x8_t n1 = vreinterpretq_s16_u16(vmovl_u8(n1_u8));
+            int16x8_t n2 = vreinterpretq_s16_u16(vmovl_u8(n2_u8));
+
 
             // Multiply-accumulate for first 4 pixels
-            float32x4_t sum1 = vmulq_f32(f0, k0);
-            sum1 = vmlaq_f32(sum1, f1, k1);
-            sum1 = vmlaq_f32(sum1, f2, k2);
-            sum1 = vmlaq_f32(sum1, f3, k3);
-            sum1 = vmlaq_f32(sum1, f4, k4);
-            sum1 = vmlaq_f32(sum1, f5, k5);
-            sum1 = vmlaq_f32(sum1, f6, k6);
-            sum1 = vmlaq_f32(sum1, f7, k7);
-            sum1 = vmlaq_f32(sum1, f8, k8);
+            // std::cout << "p0: " << curr[x];
+            int16x8_t sum1 = vmulq_s16(p0, k0);
+            sum1 = vmlaq_s16(sum1, p1, k1);
+            sum1 = vmlaq_s16(sum1, p2, k2);
+            sum1 = vmlaq_s16(sum1, c0, k3);
+            sum1 = vmlaq_s16(sum1, c1, k4);
+            sum1 = vmlaq_s16(sum1, c2, k5);
+            sum1 = vmlaq_s16(sum1, n0, k6);
+            sum1 = vmlaq_s16(sum1, n1, k7);
+            sum1 = vmlaq_s16(sum1, n2, k8);
 
-            // Now upper half (next 4 pixels)
-            f0 = vcvtq_f32_u32(vmovl_u16(vget_high_u16(vmovl_u8(p0))));
-            f1 = vcvtq_f32_u32(vmovl_u16(vget_high_u16(vmovl_u8(p1))));
-            f2 = vcvtq_f32_u32(vmovl_u16(vget_high_u16(vmovl_u8(p2))));
-            f3 = vcvtq_f32_u32(vmovl_u16(vget_high_u16(vmovl_u8(c0))));
-            f4 = vcvtq_f32_u32(vmovl_u16(vget_high_u16(vmovl_u8(c1))));
-            f5 = vcvtq_f32_u32(vmovl_u16(vget_high_u16(vmovl_u8(c2))));
-            f6 = vcvtq_f32_u32(vmovl_u16(vget_high_u16(vmovl_u8(n0))));
-            f7 = vcvtq_f32_u32(vmovl_u16(vget_high_u16(vmovl_u8(n1))));
-            f8 = vcvtq_f32_u32(vmovl_u16(vget_high_u16(vmovl_u8(n2))));
+            int32x4_t lo = vmovl_s16(vget_low_s16(sum1));   // lower 4 lanes
+            int32x4_t hi = vmovl_s16(vget_high_s16(sum1));  // upper 4 lanes
 
-            float32x4_t sum2 = vmulq_f32(f0, k0);
-            sum2 = vmlaq_f32(sum2, f1, k1);
-            sum2 = vmlaq_f32(sum2, f2, k2);
-            sum2 = vmlaq_f32(sum2, f3, k3);
-            sum2 = vmlaq_f32(sum2, f4, k4);
-            sum2 = vmlaq_f32(sum2, f5, k5);
-            sum2 = vmlaq_f32(sum2, f6, k6);
-            sum2 = vmlaq_f32(sum2, f7, k7);
-            sum2 = vmlaq_f32(sum2, f8, k8);
+            float32x4_t flo = vcvtq_f32_s32(lo);
+            float32x4_t fhi = vcvtq_f32_s32(hi);
 
             // Store 8 float results (two vectors of 4)
-            vst1q_f32(out + x, sum1);
-            vst1q_f32(out + x + 4, sum2);
+            vst1q_f32(out + x, flo);
+            vst1q_f32(out + x + 4, fhi);
         }
 
         // Remainder pixels (scalar fallback)
@@ -201,7 +190,7 @@ static inline void grayscale_calculation(const cv::Mat& bgr, cv::Mat& gray,int y
 
     auto end = high_resolution_clock::now();
     auto duration = duration_cast<milliseconds>(end - start).count();
-    std::cout << "Grayscale stage took " << duration << " ms\n";
+    // std::cout << "Grayscale stage took " << duration << " ms\n";
 }
 
 
@@ -242,6 +231,10 @@ void* workerThread(void* arg){
 }
 
 int main(int argc, char** argv){
+    #ifdef __ARM_NEON
+        std::cout << "NEON supported and enabled!\n";
+    #endif
+
     if(argc < 2){
         std::cerr << "Usage: " << argv[0] << " video_path or camera index>\n";
         return 1; 

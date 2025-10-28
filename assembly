@@ -1,0 +1,1434 @@
+	.arch armv8-a
+	.file	"simd_threaded.cpp"
+	.text
+	.align	2
+	.p2align 4,,15
+	.type	_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_M_constructIPKcEEvT_S8_St20forward_iterator_tag.isra.0, %function
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_M_constructIPKcEEvT_S8_St20forward_iterator_tag.isra.0:
+.LFB18927:
+	.cfi_startproc
+	stp	x29, x30, [sp, -64]!
+	.cfi_def_cfa_offset 64
+	.cfi_offset 29, -64
+	.cfi_offset 30, -56
+	mov	x29, sp
+	stp	x19, x20, [sp, 16]
+	.cfi_offset 19, -48
+	.cfi_offset 20, -40
+	sub	x19, x2, x1
+	mov	x20, x0
+	cmp	x19, 15
+	str	x21, [sp, 32]
+	.cfi_offset 21, -32
+	mov	x21, x1
+	str	x19, [sp, 56]
+	bhi	.L12
+	cmp	x19, 1
+	ldr	x0, [x0]
+	bne	.L4
+	ldrb	w1, [x1]
+	strb	w1, [x0]
+	ldr	x19, [sp, 56]
+	ldr	x0, [x20]
+	str	x19, [x20, 8]
+	strb	wzr, [x0, x19]
+	ldp	x19, x20, [sp, 16]
+	ldr	x21, [sp, 32]
+	ldp	x29, x30, [sp], 64
+	.cfi_remember_state
+	.cfi_restore 30
+	.cfi_restore 29
+	.cfi_restore 21
+	.cfi_restore 19
+	.cfi_restore 20
+	.cfi_def_cfa_offset 0
+	ret
+	.p2align 2,,3
+.L4:
+	.cfi_restore_state
+	cbnz	x19, .L3
+	str	x19, [x20, 8]
+	strb	wzr, [x0, x19]
+	ldp	x19, x20, [sp, 16]
+	ldr	x21, [sp, 32]
+	ldp	x29, x30, [sp], 64
+	.cfi_remember_state
+	.cfi_restore 30
+	.cfi_restore 29
+	.cfi_restore 21
+	.cfi_restore 19
+	.cfi_restore 20
+	.cfi_def_cfa_offset 0
+	ret
+	.p2align 2,,3
+.L12:
+	.cfi_restore_state
+	add	x1, sp, 56
+	mov	x2, 0
+	bl	_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_createERmm
+	ldr	x1, [sp, 56]
+	str	x0, [x20]
+	str	x1, [x20, 16]
+.L3:
+	mov	x2, x19
+	mov	x1, x21
+	bl	memcpy
+	ldr	x19, [sp, 56]
+	ldr	x0, [x20]
+	str	x19, [x20, 8]
+	strb	wzr, [x0, x19]
+	ldp	x19, x20, [sp, 16]
+	ldr	x21, [sp, 32]
+	ldp	x29, x30, [sp], 64
+	.cfi_restore 30
+	.cfi_restore 29
+	.cfi_restore 21
+	.cfi_restore 19
+	.cfi_restore 20
+	.cfi_def_cfa_offset 0
+	ret
+	.cfi_endproc
+.LFE18927:
+	.size	_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_M_constructIPKcEEvT_S8_St20forward_iterator_tag.isra.0, .-_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_M_constructIPKcEEvT_S8_St20forward_iterator_tag.isra.0
+	.section	.rodata.str1.8,"aMS",@progbits,1
+	.align	3
+.LC0:
+	.string	"Convolve stage took "
+	.align	3
+.LC1:
+	.string	" ms\n"
+	.text
+	.align	2
+	.p2align 4,,15
+	.type	_ZL18convolve3x3_rowptrRKN2cv3MatERS0_PKsii, %function
+_ZL18convolve3x3_rowptrRKN2cv3MatERS0_PKsii:
+.LFB14193:
+	.cfi_startproc
+	stp	x29, x30, [sp, -128]!
+	.cfi_def_cfa_offset 128
+	.cfi_offset 29, -128
+	.cfi_offset 30, -120
+	mov	x29, sp
+	cmp	w3, 0
+	stp	x19, x20, [sp, 16]
+	.cfi_offset 19, -112
+	.cfi_offset 20, -104
+	mov	x20, x0
+	mov	x19, x2
+	ldr	w0, [x0, 8]
+	stp	x27, x28, [sp, 80]
+	.cfi_offset 27, -48
+	.cfi_offset 28, -40
+	csinc	w27, w3, wzr, gt
+	ldr	w6, [x20, 12]
+	sub	w0, w0, #1
+	stp	x21, x22, [sp, 32]
+	cmp	w0, w4
+	.cfi_offset 21, -96
+	.cfi_offset 22, -88
+	csel	w22, w0, w4, le
+	stp	x23, x24, [sp, 48]
+	.cfi_offset 23, -80
+	.cfi_offset 24, -72
+	mov	x23, x1
+	str	w6, [sp, 104]
+	bl	_ZNSt6chrono3_V212system_clock3nowEv
+	ldrsh	w1, [x19, 2]
+	mov	x21, x0
+	cmp	w27, w22
+	ldrsh	w0, [x19, 4]
+	ldrsh	w2, [x19, 6]
+	dup	v5.8h, w1
+	ldrsh	w1, [x19, 8]
+	dup	v6.8h, w0
+	ldrsh	w0, [x19, 10]
+	dup	v7.8h, w2
+	ldr	w6, [sp, 104]
+	dup	v16.8h, w1
+	ldrsh	w2, [x19, 12]
+	dup	v17.8h, w0
+	ldrsh	w1, [x19, 14]
+	ld1r	{v21.8h}, [x19]
+	ldrsh	w0, [x19, 16]
+	bge	.L19
+	dup	v19.8h, w1
+	sub	w1, w6, #10
+	sub	w17, w6, #1
+	and	w1, w1, -8
+	stp	x25, x26, [sp, 64]
+	.cfi_offset 26, -56
+	.cfi_offset 25, -64
+	add	w28, w1, 9
+	mov	w30, w28
+	dup	v20.8h, w0
+	sub	w0, w22, w27
+	sxtw	x27, w27
+	add	x3, x0, x27
+	mov	w0, w6
+	str	x21, [sp, 120]
+	dup	v18.8h, w2
+	sub	w2, w6, #8
+	.p2align 3,,7
+.L18:
+	ldr	x1, [x20, 72]
+	sub	x7, x27, #1
+	mov	x14, x27
+	cmp	w0, 9
+	ldr	x4, [x23, 72]
+	ldr	x5, [x20, 16]
+	ldr	x1, [x1]
+	ldr	x8, [x4]
+	ldr	x4, [x23, 16]
+	mul	x6, x1, x27
+	add	x27, x27, 1
+	madd	x7, x7, x1, x5
+	add	x1, x6, x1
+	add	x6, x5, x6
+	madd	x14, x14, x8, x4
+	add	x5, x5, x1
+	ble	.L22
+	mov	x1, 1
+	add	x4, x14, 4
+	sub	x13, x7, #1
+	add	x12, x7, x1
+	sub	x11, x6, #1
+	add	x10, x6, x1
+	sub	x9, x5, #1
+	add	x8, x5, x1
+	.p2align 3,,7
+.L16:
+	ldr	d0, [x13, x1]
+	ldr	d1, [x7, x1]
+	ldr	d24, [x12, x1]
+	uxtl	v0.8h, v0.8b
+	ldr	d23, [x11, x1]
+	uxtl	v1.8h, v1.8b
+	ldr	d22, [x6, x1]
+	mul	v0.8h, v0.8h, v21.8h
+	uxtl	v24.8h, v24.8b
+	ldr	d4, [x10, x1]
+	uxtl	v23.8h, v23.8b
+	ldr	d3, [x9, x1]
+	uxtl	v22.8h, v22.8b
+	ldr	d2, [x5, x1]
+	mla	v0.8h, v1.8h, v5.8h
+	uxtl	v4.8h, v4.8b
+	ldr	d1, [x8, x1]
+	add	x1, x1, 8
+	cmp	w2, w1
+	uxtl	v3.8h, v3.8b
+	mla	v0.8h, v24.8h, v6.8h
+	uxtl	v2.8h, v2.8b
+	uxtl	v1.8h, v1.8b
+	mla	v0.8h, v23.8h, v7.8h
+	mla	v0.8h, v22.8h, v16.8h
+	mla	v0.8h, v4.8h, v17.8h
+	mla	v0.8h, v3.8h, v18.8h
+	mla	v0.8h, v2.8h, v19.8h
+	mla	v0.8h, v1.8h, v20.8h
+	sxtl	v1.4s, v0.4h
+	sxtl2	v0.4s, v0.8h
+	scvtf	v1.4s, v1.4s
+	scvtf	v0.4s, v0.4s
+	stp	q1, q0, [x4]
+	add	x4, x4, 32
+	bgt	.L16
+	sxtw	x1, w30
+.L15:
+	cmp	w1, w17
+	bge	.L21
+	ldrsh	w28, [x19]
+	sub	x13, x7, #1
+	add	x12, x7, 1
+	sub	x11, x6, #1
+	add	x10, x6, 1
+	stp	w0, w30, [sp, 104]
+	ldrsh	w26, [x19, 2]
+	sub	x9, x5, #1
+	add	x8, x5, 1
+	str	x27, [sp, 112]
+	ldrsh	w25, [x19, 4]
+	ldrsh	w24, [x19, 6]
+	ldrsh	w22, [x19, 8]
+	ldrsh	w21, [x19, 10]
+	ldrsh	w18, [x19, 12]
+	ldrsh	w16, [x19, 14]
+	ldrsh	w15, [x19, 16]
+	.p2align 3,,7
+.L20:
+	ldrb	w0, [x7, x1]
+	ldrb	w4, [x13, x1]
+	ldrb	w30, [x12, x1]
+	mul	w0, w0, w26
+	ldrb	w27, [x11, x1]
+	madd	w0, w4, w28, w0
+	ldrb	w4, [x6, x1]
+	madd	w0, w30, w25, w0
+	ldrb	w30, [x10, x1]
+	madd	w0, w27, w24, w0
+	ldrb	w27, [x9, x1]
+	madd	w0, w4, w22, w0
+	ldrb	w4, [x5, x1]
+	madd	w0, w30, w21, w0
+	ldrb	w30, [x8, x1]
+	madd	w27, w27, w18, w0
+	madd	w4, w4, w16, w27
+	madd	w30, w30, w15, w4
+	scvtf	s0, w30
+	str	s0, [x14, x1, lsl 2]
+	add	x1, x1, 1
+	cmp	w17, w1
+	bgt	.L20
+	ldr	x27, [sp, 112]
+	ldp	w0, w30, [sp, 104]
+.L21:
+	cmp	x27, x3
+	bne	.L18
+	ldp	x25, x26, [sp, 64]
+	.cfi_restore 26
+	.cfi_restore 25
+	ldr	x21, [sp, 120]
+.L19:
+	bl	_ZNSt6chrono3_V212system_clock3nowEv
+	mov	x3, x0
+	mov	x4, 13531
+	movk	x4, 0xd7b6, lsl 16
+	sub	x3, x3, x21
+	adrp	x0, :got:_ZSt4cout
+	ldr	x0, [x0, :got_lo12:_ZSt4cout]
+	movk	x4, 0xde82, lsl 32
+	movk	x4, 0x431b, lsl 48
+	mov	x2, 20
+	adrp	x1, .LC0
+	add	x1, x1, :lo12:.LC0
+	smulh	x4, x3, x4
+	asr	x4, x4, 18
+	sub	x19, x4, x3, asr 63
+	bl	_ZSt16__ostream_insertIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_PKS3_l
+	mov	x1, x19
+	adrp	x0, :got:_ZSt4cout
+	ldr	x0, [x0, :got_lo12:_ZSt4cout]
+	bl	_ZNSo9_M_insertIlEERSoT_
+	adrp	x1, .LC1
+	ldp	x19, x20, [sp, 16]
+	mov	x2, 4
+	add	x1, x1, :lo12:.LC1
+	ldp	x21, x22, [sp, 32]
+	ldp	x23, x24, [sp, 48]
+	ldp	x27, x28, [sp, 80]
+	ldp	x29, x30, [sp], 128
+	.cfi_restore 30
+	.cfi_restore 29
+	.cfi_restore 27
+	.cfi_restore 28
+	.cfi_restore 23
+	.cfi_restore 24
+	.cfi_restore 21
+	.cfi_restore 22
+	.cfi_restore 19
+	.cfi_restore 20
+	.cfi_def_cfa_offset 0
+	b	_ZSt16__ostream_insertIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_PKS3_l
+	.p2align 2,,3
+.L22:
+	.cfi_def_cfa_offset 128
+	.cfi_offset 19, -112
+	.cfi_offset 20, -104
+	.cfi_offset 21, -96
+	.cfi_offset 22, -88
+	.cfi_offset 23, -80
+	.cfi_offset 24, -72
+	.cfi_offset 25, -64
+	.cfi_offset 26, -56
+	.cfi_offset 27, -48
+	.cfi_offset 28, -40
+	.cfi_offset 29, -128
+	.cfi_offset 30, -120
+	mov	x1, 1
+	b	.L15
+	.cfi_endproc
+.LFE14193:
+	.size	_ZL18convolve3x3_rowptrRKN2cv3MatERS0_PKsii, .-_ZL18convolve3x3_rowptrRKN2cv3MatERS0_PKsii
+	.align	2
+	.p2align 4,,15
+	.global	_Z12workerThreadPv
+	.type	_Z12workerThreadPv, %function
+_Z12workerThreadPv:
+.LFB14197:
+	.cfi_startproc
+	stp	x29, x30, [sp, -176]!
+	.cfi_def_cfa_offset 176
+	.cfi_offset 29, -176
+	.cfi_offset 30, -168
+	mov	x29, sp
+	stp	x19, x20, [sp, 16]
+	.cfi_offset 19, -160
+	.cfi_offset 20, -152
+	mov	x20, x0
+	ldr	x19, [x20]
+	stp	x23, x24, [sp, 48]
+	.cfi_offset 23, -128
+	.cfi_offset 24, -120
+	adrp	x24, .LANCHOR0
+	add	x24, x24, :lo12:.LANCHOR0
+	add	x0, x24, 32
+	stp	x21, x22, [sp, 32]
+	add	x23, x19, 56
+	.cfi_offset 21, -144
+	.cfi_offset 22, -136
+	add	x21, x19, 88
+	add	x22, x19, 48
+	stp	x25, x26, [sp, 64]
+	.cfi_offset 25, -112
+	.cfi_offset 26, -104
+	mov	w26, 77
+	stp	x27, x28, [sp, 80]
+	.cfi_offset 27, -96
+	.cfi_offset 28, -88
+	str	x0, [sp, 112]
+	b	.L50
+	.p2align 2,,3
+.L32:
+	cmp	w1, 3
+	beq	.L62
+.L30:
+	mov	x0, x21
+	bl	pthread_barrier_wait
+.L50:
+	mov	x0, x23
+	bl	pthread_barrier_wait
+	ldar	w1, [x22]
+	cmp	w1, 4
+	beq	.L28
+	ldr	w0, [x19, 40]
+	ldr	w3, [x20, 8]
+	adds	w2, w0, 3
+	add	w4, w0, 6
+	csel	w4, w4, w2, mi
+	asr	w4, w4, 2
+	mul	w3, w4, w3
+	add	w4, w4, w3
+	cmp	w4, w0
+	csel	w4, w4, w0, le
+	cmp	w1, 1
+	beq	.L63
+	cmp	w1, 2
+	beq	.L64
+	cbnz	w1, .L32
+	ldp	x28, x8, [x19]
+	cmp	w3, 0
+	csel	w25, w3, wzr, ge
+	ldp	w0, w27, [x28, 8]
+	str	x8, [sp, 104]
+	cmp	w0, w4
+	csel	w4, w0, w4, le
+	str	w4, [sp, 120]
+	bl	_ZNSt6chrono3_V212system_clock3nowEv
+	ldr	w4, [sp, 120]
+	ldr	x8, [sp, 104]
+	cmp	w4, w25
+	ble	.L38
+	sub	w12, w27, #8
+	movi	v7.8b, 0x4d
+	movi	v6.8b, 0xffffffffffffff96
+	movi	v5.8b, 0x1d
+	movi	v1.8h, 0x80
+	sub	w0, w4, w25
+	sxtw	x6, w25
+	and	w12, w12, -8
+	add	x11, x0, x6
+	add	w12, w12, 8
+	sub	w7, w27, #7
+	mov	w10, 150
+	mov	w9, 29
+	.p2align 3,,7
+.L37:
+	ldr	x0, [x8, 72]
+	cmp	w27, 7
+	ldr	x2, [x28, 72]
+	ldr	x1, [x28, 16]
+	ldr	x5, [x0]
+	ldr	x3, [x2]
+	ldr	x0, [x8, 16]
+	madd	x3, x6, x3, x1
+	madd	x5, x6, x5, x0
+	ble	.L51
+	mov	x1, x3
+	mov	x0, 0
+	.p2align 3,,7
+.L35:
+	ld3	{v2.8b - v4.8b}, [x1], 24
+	umull	v0.8h, v4.8b, v7.8b
+	umlal	v0.8h, v3.8b, v6.8b
+	umlal	v0.8h, v2.8b, v5.8b
+	add	v0.8h, v0.8h, v1.8h
+	shrn	v0.8b, v0.8h, 8
+	str	d0, [x5, x0]
+	add	x0, x0, 8
+	cmp	w7, w0
+	bgt	.L35
+	mov	w0, w12
+.L34:
+	cmp	w27, w0
+	ble	.L40
+	sxtw	x2, w0
+	add	w0, w0, w0, lsl 1
+	add	x0, x3, w0, sxtw
+	.p2align 3,,7
+.L39:
+	ldrb	w4, [x0, 1]
+	ldrb	w3, [x0, 2]
+	ldrb	w1, [x0], 3
+	mul	w4, w4, w10
+	madd	w3, w3, w26, w4
+	madd	w1, w1, w9, w3
+	add	w1, w1, 128
+	asr	w1, w1, 8
+	strb	w1, [x5, x2]
+	add	x2, x2, 1
+	cmp	w27, w2
+	bgt	.L39
+.L40:
+	add	x6, x6, 1
+	cmp	x11, x6
+	bne	.L37
+.L38:
+	bl	_ZNSt6chrono3_V212system_clock3nowEv
+	b	.L30
+	.p2align 2,,3
+.L63:
+	ldp	x0, x1, [x19, 8]
+	mov	x2, x24
+	bl	_ZL18convolve3x3_rowptrRKN2cv3MatERS0_PKsii
+	b	.L30
+	.p2align 2,,3
+.L51:
+	mov	w0, 0
+	b	.L34
+	.p2align 2,,3
+.L64:
+	ldr	x0, [x19, 8]
+	ldr	x1, [x19, 24]
+	ldr	x2, [sp, 112]
+	bl	_ZL18convolve3x3_rowptrRKN2cv3MatERS0_PKsii
+	b	.L30
+.L28:
+	mov	x0, x21
+	bl	pthread_barrier_wait
+	ldp	x19, x20, [sp, 16]
+	mov	x0, 0
+	ldp	x21, x22, [sp, 32]
+	ldp	x23, x24, [sp, 48]
+	ldp	x25, x26, [sp, 64]
+	ldp	x27, x28, [sp, 80]
+	ldp	x29, x30, [sp], 176
+	.cfi_remember_state
+	.cfi_restore 30
+	.cfi_restore 29
+	.cfi_restore 27
+	.cfi_restore 28
+	.cfi_restore 25
+	.cfi_restore 26
+	.cfi_restore 23
+	.cfi_restore 24
+	.cfi_restore 21
+	.cfi_restore 22
+	.cfi_restore 19
+	.cfi_restore 20
+	.cfi_def_cfa_offset 0
+	ret
+.L62:
+	.cfi_restore_state
+	ldp	x0, x10, [x19, 16]
+	cmp	w3, 0
+	csel	w3, w3, wzr, ge
+	ldr	x9, [x19, 32]
+	ldp	w1, w8, [x0, 8]
+	cmp	w1, w4
+	csel	w4, w1, w4, le
+	cmp	w3, w4
+	bge	.L30
+	ldr	x6, [x0, 72]
+	sxtw	x28, w3
+	sbfiz	x2, x8, 2, 32
+	ldr	x1, [x9, 72]
+	ldr	x5, [x10, 72]
+	ldr	x7, [x6]
+	ldr	x9, [x9, 16]
+	ldr	x6, [x5]
+	ldr	x5, [x1]
+	ldr	x1, [x0, 16]
+	ldr	x0, [x10, 16]
+	madd	x1, x28, x7, x1
+	madd	x0, x28, x6, x0
+	madd	x28, x28, x5, x9
+	.p2align 3,,7
+.L44:
+	cmp	w8, 0
+	mov	x27, 0
+	ble	.L49
+	.p2align 3,,7
+.L43:
+	ldr	s1, [x0, x27]
+	ldr	s0, [x1, x27]
+	fmul	s1, s1, s1
+	fmadd	s0, s0, s0, s1
+	fcmp	s0, #0.0
+	bpl	.L53
+	str	w3, [sp, 104]
+	stp	w8, w4, [sp, 120]
+	stp	x0, x1, [sp, 128]
+	stp	x2, x7, [sp, 144]
+	stp	x6, x5, [sp, 160]
+	bl	sqrtf
+	ldp	x0, x1, [sp, 128]
+	ldp	x2, x7, [sp, 144]
+	ldp	x6, x5, [sp, 160]
+	ldr	w3, [sp, 104]
+	ldp	w8, w4, [sp, 120]
+	b	.L48
+	.p2align 2,,3
+.L53:
+	fsqrt	s0, s0
+.L48:
+	str	s0, [x28, x27]
+	add	x27, x27, 4
+	cmp	x2, x27
+	bne	.L43
+.L49:
+	add	w3, w3, 1
+	add	x28, x28, x5
+	cmp	w3, w4
+	add	x1, x1, x7
+	add	x0, x0, x6
+	bne	.L44
+	b	.L30
+	.cfi_endproc
+.LFE14197:
+	.size	_Z12workerThreadPv, .-_Z12workerThreadPv
+	.section	.rodata._ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC2IS3_EEPKcRKS3_.str1.8,"aMS",@progbits,1
+	.align	3
+.LC2:
+	.string	"basic_string: construction from null is not valid"
+	.section	.text._ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC2IS3_EEPKcRKS3_,"axG",@progbits,_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC5IS3_EEPKcRKS3_,comdat
+	.align	2
+	.p2align 4,,15
+	.weak	_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC2IS3_EEPKcRKS3_
+	.type	_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC2IS3_EEPKcRKS3_, %function
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC2IS3_EEPKcRKS3_:
+.LFB14571:
+	.cfi_startproc
+	stp	x29, x30, [sp, -64]!
+	.cfi_def_cfa_offset 64
+	.cfi_offset 29, -64
+	.cfi_offset 30, -56
+	mov	x29, sp
+	stp	x21, x22, [sp, 32]
+	.cfi_offset 21, -32
+	.cfi_offset 22, -24
+	add	x22, x0, 16
+	stp	x19, x20, [sp, 16]
+	.cfi_offset 19, -48
+	.cfi_offset 20, -40
+	str	x22, [x0]
+	cbz	x1, .L76
+	mov	x20, x0
+	mov	x0, x1
+	mov	x21, x1
+	bl	strlen
+	cmp	x0, 15
+	str	x0, [sp, 56]
+	mov	x19, x0
+	bhi	.L77
+	cmp	x0, 1
+	bne	.L69
+	ldrb	w0, [x21]
+	str	x19, [x20, 8]
+	strb	w0, [x20, 16]
+	strb	wzr, [x22, x19]
+	ldp	x19, x20, [sp, 16]
+	ldp	x21, x22, [sp, 32]
+	ldp	x29, x30, [sp], 64
+	.cfi_remember_state
+	.cfi_restore 30
+	.cfi_restore 29
+	.cfi_restore 21
+	.cfi_restore 22
+	.cfi_restore 19
+	.cfi_restore 20
+	.cfi_def_cfa_offset 0
+	ret
+	.p2align 2,,3
+.L69:
+	.cfi_restore_state
+	cbnz	x0, .L68
+	str	x19, [x20, 8]
+	strb	wzr, [x22, x19]
+	ldp	x19, x20, [sp, 16]
+	ldp	x21, x22, [sp, 32]
+	ldp	x29, x30, [sp], 64
+	.cfi_remember_state
+	.cfi_restore 30
+	.cfi_restore 29
+	.cfi_restore 21
+	.cfi_restore 22
+	.cfi_restore 19
+	.cfi_restore 20
+	.cfi_def_cfa_offset 0
+	ret
+	.p2align 2,,3
+.L77:
+	.cfi_restore_state
+	add	x1, sp, 56
+	mov	x2, 0
+	mov	x0, x20
+	bl	_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_createERmm
+	ldr	x1, [sp, 56]
+	mov	x22, x0
+	str	x0, [x20]
+	str	x1, [x20, 16]
+.L68:
+	mov	x2, x19
+	mov	x1, x21
+	mov	x0, x22
+	bl	memcpy
+	ldr	x19, [sp, 56]
+	ldr	x22, [x20]
+	str	x19, [x20, 8]
+	strb	wzr, [x22, x19]
+	ldp	x19, x20, [sp, 16]
+	ldp	x21, x22, [sp, 32]
+	ldp	x29, x30, [sp], 64
+	.cfi_remember_state
+	.cfi_restore 30
+	.cfi_restore 29
+	.cfi_restore 21
+	.cfi_restore 22
+	.cfi_restore 19
+	.cfi_restore 20
+	.cfi_def_cfa_offset 0
+	ret
+.L76:
+	.cfi_restore_state
+	adrp	x0, .LC2
+	add	x0, x0, :lo12:.LC2
+	bl	_ZSt19__throw_logic_errorPKc
+	.cfi_endproc
+.LFE14571:
+	.size	_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC2IS3_EEPKcRKS3_, .-_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC2IS3_EEPKcRKS3_
+	.weak	_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1IS3_EEPKcRKS3_
+	.set	_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1IS3_EEPKcRKS3_,_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC2IS3_EEPKcRKS3_
+	.section	.text.startup,"ax",@progbits
+	.align	2
+	.p2align 4,,15
+	.type	_GLOBAL__sub_I__Z12workerThreadPv, %function
+_GLOBAL__sub_I__Z12workerThreadPv:
+.LFB18924:
+	.cfi_startproc
+	stp	x29, x30, [sp, -32]!
+	.cfi_def_cfa_offset 32
+	.cfi_offset 29, -32
+	.cfi_offset 30, -24
+	mov	x29, sp
+	str	x19, [sp, 16]
+	.cfi_offset 19, -16
+	adrp	x19, .LANCHOR1
+	add	x19, x19, :lo12:.LANCHOR1
+	mov	x0, x19
+	bl	_ZNSt8ios_base4InitC1Ev
+	mov	x1, x19
+	ldr	x19, [sp, 16]
+	adrp	x2, __dso_handle
+	add	x2, x2, :lo12:__dso_handle
+	ldp	x29, x30, [sp], 32
+	.cfi_restore 30
+	.cfi_restore 29
+	.cfi_restore 19
+	.cfi_def_cfa_offset 0
+	adrp	x0, :got:_ZNSt8ios_base4InitD1Ev
+	ldr	x0, [x0, :got_lo12:_ZNSt8ios_base4InitD1Ev]
+	b	__cxa_atexit
+	.cfi_endproc
+.LFE18924:
+	.size	_GLOBAL__sub_I__Z12workerThreadPv, .-_GLOBAL__sub_I__Z12workerThreadPv
+	.section	.init_array,"aw"
+	.align	3
+	.xword	_GLOBAL__sub_I__Z12workerThreadPv
+	.section	.rodata.str1.8
+	.align	3
+.LC3:
+	.string	"NEON supported and enabled!\n"
+	.align	3
+.LC4:
+	.string	"Usage: "
+	.align	3
+.LC5:
+	.string	" video_path or camera index>\n"
+	.align	3
+.LC6:
+	.string	"stoi"
+	.align	3
+.LC7:
+	.string	"Error: could not open source.\n"
+	.align	3
+.LC8:
+	.string	"Sobel"
+	.section	.text.startup
+	.align	2
+	.p2align 4,,15
+	.global	main
+	.type	main, %function
+main:
+.LFB14198:
+	.cfi_startproc
+	.cfi_personality 0x9b,DW.ref.__gxx_personality_v0
+	.cfi_lsda 0x1b,.LLSDA14198
+	sub	sp, sp, #1056
+	.cfi_def_cfa_offset 1056
+	stp	x29, x30, [sp]
+	.cfi_offset 29, -1056
+	.cfi_offset 30, -1048
+	mov	x29, sp
+	stp	x19, x20, [sp, 16]
+	.cfi_offset 19, -1040
+	.cfi_offset 20, -1032
+	mov	w20, w0
+	mov	x19, x1
+	adrp	x1, .LC3
+	add	x1, x1, :lo12:.LC3
+	adrp	x0, :got:_ZSt4cout
+	ldr	x0, [x0, :got_lo12:_ZSt4cout]
+	stp	x23, x24, [sp, 48]
+	stp	x25, x26, [sp, 64]
+	str	d8, [sp, 96]
+.LEHB0:
+	.cfi_offset 23, -1008
+	.cfi_offset 24, -1000
+	.cfi_offset 25, -992
+	.cfi_offset 26, -984
+	.cfi_offset 72, -960
+	bl	_ZStlsISt11char_traitsIcEERSt13basic_ostreamIcT_ES5_PKc
+	cmp	w20, 1
+	ble	.L135
+	add	x0, sp, 248
+	stp	x21, x22, [sp, 32]
+	.cfi_offset 22, -1016
+	.cfi_offset 21, -1024
+	stp	x27, x28, [sp, 80]
+	.cfi_offset 28, -968
+	.cfi_offset 27, -976
+	str	x0, [sp, 144]
+	bl	_ZN2cv12VideoCaptureC1Ev
+.LEHE0:
+	ldr	x1, [x19, 8]
+	ldrb	w0, [x1]
+	sub	w0, w0, #48
+	cmp	w0, 9
+	bls	.L136
+	add	x27, sp, 840
+	add	x21, sp, 936
+	mov	x2, x27
+	mov	x0, x21
+.LEHB1:
+	bl	_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1IS3_EEPKcRKS3_
+.LEHE1:
+	ldr	x0, [sp, 144]
+	mov	w2, 0
+	mov	x1, x21
+.LEHB2:
+	bl	_ZN2cv12VideoCapture4openERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEi
+.LEHE2:
+.L131:
+	mov	x0, x21
+	bl	_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE10_M_disposeEv
+	ldr	x0, [sp, 144]
+.LEHB3:
+	bl	_ZNK2cv12VideoCapture8isOpenedEv
+	tst	w0, 255
+	beq	.L137
+	add	x4, sp, 184
+	mov	w3, 4
+	mov	x25, x4
+	add	x23, sp, 992
+	str	x4, [sp, 152]
+	add	x4, sp, 936
+	mov	w2, 5
+	mov	x1, 0
+	mov	x0, x23
+	stp	xzr, xzr, [x4]
+	add	x22, sp, 1024
+	adrp	x24, _Z12workerThreadPv
+	add	x24, x24, :lo12:_Z12workerThreadPv
+	mov	w20, 0
+	stp	xzr, xzr, [x4, 16]
+	str	xzr, [sp, 968]
+	str	xzr, [sp, 976]
+	str	w3, [sp, 984]
+	bl	pthread_barrier_init
+	mov	x0, x22
+	mov	w2, 5
+	mov	x1, 0
+	bl	pthread_barrier_init
+	movi	v0.4s, 0
+	add	x0, sp, 296
+	mov	x19, x0
+	stp	q0, q0, [x0]
+	stp	q0, q0, [x0, 32]
+.L95:
+	mov	x3, x19
+	mov	x0, x25
+	str	x21, [x19]
+	mov	x2, x24
+	mov	x1, 0
+	str	w20, [x19, 8]
+	bl	pthread_create
+	add	w20, w20, 1
+	add	x25, x25, 8
+	cmp	w20, 4
+	add	x19, x19, 16
+	bne	.L95
+	adrp	x0, .LC8
+	add	x1, x0, :lo12:.LC8
+	add	x26, sp, 744
+	mov	x0, x27
+	mov	x2, x26
+	bl	_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1IS3_EEPKcRKS3_
+.LEHE3:
+	mov	w1, 1
+	mov	x0, x27
+.LEHB4:
+	bl	_ZN2cv11namedWindowERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEi
+.LEHE4:
+	mov	x0, x27
+	add	x25, sp, 360
+	bl	_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE10_M_disposeEv
+	add	x1, sp, 456
+	mov	x0, x25
+	mov	x19, x1
+	str	x1, [sp, 112]
+	bl	_ZN2cv3MatC1Ev
+	add	x1, sp, 552
+	mov	x0, x19
+	mov	x19, x1
+	str	x1, [sp, 128]
+	bl	_ZN2cv3MatC1Ev
+	add	x1, sp, 648
+	mov	x0, x19
+	mov	x19, x1
+	str	x1, [sp, 120]
+	bl	_ZN2cv3MatC1Ev
+	mov	x0, x19
+	add	x19, sp, 216
+	bl	_ZN2cv3MatC1Ev
+	mov	x0, x26
+	bl	_ZN2cv3MatC1Ev
+	mov	x0, x27
+	bl	_ZN2cv3MatC1Ev
+	adrp	x0, .LC8+5
+	add	x0, x0, :lo12:.LC8+5
+	str	x0, [sp, 136]
+	b	.L104
+	.p2align 2,,3
+.L96:
+	mov	x0, x25
+.LEHB5:
+	bl	_ZNK2cv3Mat5emptyEv
+	tst	w0, 255
+	bne	.L132
+	ldr	x0, [sp, 424]
+	ldr	x1, [sp, 520]
+	ldr	w2, [x0, 4]
+	ldp	w3, w4, [x1]
+	ldr	w1, [x0]
+	cmp	w4, w2
+	ccmp	w3, w1, 0, eq
+	beq	.L99
+	bfi	x28, x2, 0, 32
+	ldr	x0, [sp, 112]
+	mov	w2, 0
+	bfi	x28, x1, 32, 32
+	mov	x1, x28
+	bl	_ZN2cv3Mat6createENS_5Size_IiEEi
+	ldr	x1, [sp, 424]
+	mov	w2, 5
+	ldr	x0, [sp, 128]
+	ldr	d0, [x1]
+	rev64	v0.2s, v0.2s
+	umov	x1, v0.d[0]
+	bl	_ZN2cv3Mat6createENS_5Size_IiEEi
+	ldr	x1, [sp, 424]
+	mov	w2, 5
+	ldr	x0, [sp, 120]
+	ldr	d0, [x1]
+	rev64	v0.2s, v0.2s
+	umov	x1, v0.d[0]
+	bl	_ZN2cv3Mat6createENS_5Size_IiEEi
+	ldr	x1, [sp, 424]
+	mov	w2, 5
+	mov	x0, x26
+	ldr	d0, [x1]
+	rev64	v0.2s, v0.2s
+	umov	x1, v0.d[0]
+	bl	_ZN2cv3Mat6createENS_5Size_IiEEi
+.L99:
+	add	x24, sp, 160
+	mov	x0, 4294967297
+	str	xzr, [sp, 160]
+	mov	w1, 6
+	movk	w1, 0xc102, lsl 16
+	stp	x24, x0, [sp, 224]
+	str	w1, [sp, 216]
+	bl	_ZN2cv7noArrayEv
+	ldr	x20, [sp, 128]
+	mov	x2, x0
+	mov	x1, x19
+	mov	x0, x20
+	bl	_ZN2cv3Mat5setToERKNS_11_InputArrayES3_
+	mov	x0, 4294967297
+	mov	w1, 6
+	movk	w1, 0xc102, lsl 16
+	str	xzr, [sp, 160]
+	stp	x24, x0, [sp, 224]
+	str	w1, [sp, 216]
+	bl	_ZN2cv7noArrayEv
+	ldr	x21, [sp, 120]
+	mov	x2, x0
+	mov	x1, x19
+	mov	x0, x21
+	bl	_ZN2cv3Mat5setToERKNS_11_InputArrayES3_
+	ldr	x0, [sp, 112]
+	add	x1, sp, 936
+	ldr	d0, [sp, 464]
+	stp	x20, x21, [x1, 16]
+	stp	x25, x0, [x1]
+	str	x26, [sp, 968]
+	str	d0, [sp, 976]
+	add	x20, sp, 984
+	stlr	wzr, [x20]
+	mov	x0, x23
+	bl	pthread_barrier_wait
+	mov	x0, x22
+	bl	pthread_barrier_wait
+	mov	w0, 1
+	stlr	w0, [x20]
+	mov	x0, x23
+	bl	pthread_barrier_wait
+	mov	x0, x22
+	bl	pthread_barrier_wait
+	mov	w0, 2
+	stlr	w0, [x20]
+	mov	x0, x23
+	bl	pthread_barrier_wait
+	mov	x0, x22
+	bl	pthread_barrier_wait
+	mov	w0, 3
+	stlr	w0, [x20]
+	mov	x0, x23
+	bl	pthread_barrier_wait
+	mov	x0, x22
+	bl	pthread_barrier_wait
+	mov	x3, 33619968
+	movi	d1, #0
+	fmov	d0, 5.0e-1
+	mov	x1, x19
+	mov	x0, x26
+	str	xzr, [sp, 232]
+	mov	w2, 0
+	stp	x3, x27, [sp, 216]
+	bl	_ZNK2cv3Mat9convertToERKNS_12_OutputArrayEidd
+	adrp	x0, .LC8
+	add	x1, x0, :lo12:.LC8
+	ldr	x2, [sp, 136]
+	add	x21, sp, 232
+	mov	x0, x19
+	str	x21, [sp, 216]
+	bl	_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_M_constructIPKcEEvT_S8_St20forward_iterator_tag.isra.0
+.LEHE5:
+	mov	x2, 16842752
+	mov	x1, x24
+	str	xzr, [sp, 176]
+	mov	x0, x19
+	stp	x2, x27, [sp, 160]
+.LEHB6:
+	bl	_ZN2cv6imshowERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKNS_11_InputArrayE
+.LEHE6:
+	ldr	x0, [sp, 216]
+	cmp	x0, x21
+	beq	.L100
+	ldr	x1, [sp, 232]
+	add	x1, x1, 1
+	bl	_ZdlPvm
+.L100:
+	mov	w0, 1
+.LEHB7:
+	bl	_ZN2cv7waitKeyEi
+	cmp	w0, 27
+	beq	.L97
+	adrp	x0, .LC8
+	add	x1, x0, :lo12:.LC8
+	ldr	x2, [sp, 136]
+	mov	x0, x19
+	str	x21, [sp, 216]
+	bl	_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_M_constructIPKcEEvT_S8_St20forward_iterator_tag.isra.0
+.LEHE7:
+	mov	w1, 4
+	mov	x0, x19
+.LEHB8:
+	bl	_ZN2cv17getWindowPropertyERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEi
+.LEHE8:
+	ldr	x0, [sp, 216]
+	fmov	d8, d0
+	cmp	x0, x21
+	beq	.L102
+	ldr	x1, [sp, 232]
+	add	x1, x1, 1
+	bl	_ZdlPvm
+.L102:
+	fmov	d0, 1.0e+0
+	fcmpe	d8, d0
+	bmi	.L97
+.L104:
+	mov	x2, 33619968
+	ldr	x0, [sp, 144]
+	mov	x1, x19
+	str	xzr, [sp, 232]
+	stp	x2, x25, [sp, 216]
+.LEHB9:
+	bl	_ZN2cv12VideoCapture4readERKNS_12_OutputArrayE
+	tst	w0, 255
+	bne	.L96
+.L132:
+	add	x20, sp, 984
+.L97:
+	mov	w0, 4
+	stlr	w0, [x20]
+	mov	x0, x23
+	bl	pthread_barrier_wait
+	mov	x0, x22
+	mov	x19, 1
+	bl	pthread_barrier_wait
+.L105:
+	ldr	x0, [sp, 152]
+	mov	x1, 0
+	add	x0, x0, x19, lsl 3
+	ldr	x0, [x0, -8]
+	bl	pthread_join
+.LEHE9:
+	add	x19, x19, 1
+	cmp	x19, 5
+	bne	.L105
+	mov	x0, x23
+	mov	w19, 0
+	bl	pthread_barrier_destroy
+	mov	x0, x22
+	bl	pthread_barrier_destroy
+	mov	x0, x27
+	bl	_ZN2cv3MatD1Ev
+	mov	x0, x26
+	bl	_ZN2cv3MatD1Ev
+	ldr	x0, [sp, 120]
+	bl	_ZN2cv3MatD1Ev
+	ldr	x0, [sp, 128]
+	bl	_ZN2cv3MatD1Ev
+	ldr	x0, [sp, 112]
+	bl	_ZN2cv3MatD1Ev
+	mov	x0, x25
+	bl	_ZN2cv3MatD1Ev
+.L94:
+	ldr	x0, [sp, 144]
+	bl	_ZN2cv12VideoCaptureD1Ev
+	ldp	x21, x22, [sp, 32]
+	.cfi_restore 22
+	.cfi_restore 21
+	ldp	x27, x28, [sp, 80]
+	.cfi_restore 28
+	.cfi_restore 27
+.L80:
+	mov	w0, w19
+	ldp	x29, x30, [sp]
+	ldp	x19, x20, [sp, 16]
+	ldp	x23, x24, [sp, 48]
+	ldp	x25, x26, [sp, 64]
+	ldr	d8, [sp, 96]
+	add	sp, sp, 1056
+	.cfi_restore 29
+	.cfi_restore 30
+	.cfi_restore 25
+	.cfi_restore 26
+	.cfi_restore 23
+	.cfi_restore 24
+	.cfi_restore 19
+	.cfi_restore 20
+	.cfi_restore 72
+	.cfi_def_cfa_offset 0
+	ret
+.L136:
+	.cfi_def_cfa_offset 1056
+	.cfi_offset 19, -1040
+	.cfi_offset 20, -1032
+	.cfi_offset 21, -1024
+	.cfi_offset 22, -1016
+	.cfi_offset 23, -1008
+	.cfi_offset 24, -1000
+	.cfi_offset 25, -992
+	.cfi_offset 26, -984
+	.cfi_offset 27, -976
+	.cfi_offset 28, -968
+	.cfi_offset 29, -1056
+	.cfi_offset 30, -1048
+	.cfi_offset 72, -960
+	add	x21, sp, 936
+	add	x2, sp, 744
+	mov	x0, x21
+.LEHB10:
+	bl	_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1IS3_EEPKcRKS3_
+.LEHE10:
+	bl	__errno_location
+	ldr	x22, [sp, 936]
+	mov	x19, x0
+	add	x27, sp, 840
+	mov	x1, x27
+	mov	w2, 10
+	ldr	w20, [x0]
+	str	wzr, [x19]
+	mov	x0, x22
+	bl	strtol
+	ldr	x2, [sp, 840]
+	mov	x1, x0
+	cmp	x22, x2
+	beq	.L138
+	ldr	w2, [x19]
+	cmp	w2, 34
+	beq	.L85
+	mov	x0, 2147483648
+	mov	x3, 4294967295
+	add	x0, x1, x0
+	cmp	x0, x3
+	bhi	.L85
+	cbnz	w2, .L87
+	str	w20, [x19]
+.L87:
+	ldr	x0, [sp, 144]
+	mov	w2, 0
+.LEHB11:
+	bl	_ZN2cv12VideoCapture4openEii
+.LEHE11:
+	b	.L131
+.L135:
+	.cfi_restore 21
+	.cfi_restore 22
+	.cfi_restore 27
+	.cfi_restore 28
+	adrp	x0, :got:_ZSt4cerr
+	ldr	x0, [x0, :got_lo12:_ZSt4cerr]
+	adrp	x1, .LC4
+	add	x1, x1, :lo12:.LC4
+.LEHB12:
+	bl	_ZStlsISt11char_traitsIcEERSt13basic_ostreamIcT_ES5_PKc
+	ldr	x1, [x19]
+	mov	w19, 1
+	bl	_ZStlsISt11char_traitsIcEERSt13basic_ostreamIcT_ES5_PKc
+	adrp	x1, .LC5
+	add	x1, x1, :lo12:.LC5
+	bl	_ZStlsISt11char_traitsIcEERSt13basic_ostreamIcT_ES5_PKc
+.LEHE12:
+	b	.L80
+.L137:
+	.cfi_offset 21, -1024
+	.cfi_offset 22, -1016
+	.cfi_offset 27, -976
+	.cfi_offset 28, -968
+	adrp	x1, .LC7
+	add	x1, x1, :lo12:.LC7
+	adrp	x0, :got:_ZSt4cerr
+	ldr	x0, [x0, :got_lo12:_ZSt4cerr]
+.LEHB13:
+	bl	_ZStlsISt11char_traitsIcEERSt13basic_ostreamIcT_ES5_PKc
+.LEHE13:
+	mov	w19, 1
+	b	.L94
+.L85:
+	adrp	x0, .LC6
+	add	x0, x0, :lo12:.LC6
+.LEHB14:
+	bl	_ZSt20__throw_out_of_rangePKc
+.L138:
+	adrp	x0, .LC6
+	add	x0, x0, :lo12:.LC6
+	bl	_ZSt24__throw_invalid_argumentPKc
+.LEHE14:
+.L113:
+.L133:
+	mov	x19, x0
+	mov	x0, x21
+	bl	_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE10_M_disposeEv
+.L106:
+	ldr	x0, [sp, 144]
+	bl	_ZN2cv12VideoCaptureD1Ev
+	mov	x0, x19
+.LEHB15:
+	bl	_Unwind_Resume
+.LEHE15:
+.L114:
+	mov	x19, x0
+	b	.L106
+.L115:
+	b	.L133
+.L116:
+	mov	x19, x0
+	mov	x0, x27
+	bl	_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE10_M_disposeEv
+	b	.L106
+.L117:
+	mov	x19, x0
+.L110:
+	mov	x0, x27
+	bl	_ZN2cv3MatD1Ev
+	mov	x0, x26
+	bl	_ZN2cv3MatD1Ev
+	ldr	x0, [sp, 120]
+	bl	_ZN2cv3MatD1Ev
+	ldr	x0, [sp, 128]
+	bl	_ZN2cv3MatD1Ev
+	ldr	x0, [sp, 112]
+	bl	_ZN2cv3MatD1Ev
+	mov	x0, x25
+	bl	_ZN2cv3MatD1Ev
+	b	.L106
+.L118:
+.L134:
+	mov	x1, x0
+	mov	x0, x19
+	mov	x19, x1
+	bl	_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE10_M_disposeEv
+	b	.L110
+.L119:
+	b	.L134
+.L120:
+	ldr	w1, [x19]
+	cbnz	w1, .L133
+	str	w20, [x19]
+	b	.L133
+	.cfi_endproc
+.LFE14198:
+	.global	__gxx_personality_v0
+	.section	.gcc_except_table,"a",@progbits
+.LLSDA14198:
+	.byte	0xff
+	.byte	0xff
+	.byte	0x1
+	.uleb128 .LLSDACSE14198-.LLSDACSB14198
+.LLSDACSB14198:
+	.uleb128 .LEHB0-.LFB14198
+	.uleb128 .LEHE0-.LEHB0
+	.uleb128 0
+	.uleb128 0
+	.uleb128 .LEHB1-.LFB14198
+	.uleb128 .LEHE1-.LEHB1
+	.uleb128 .L114-.LFB14198
+	.uleb128 0
+	.uleb128 .LEHB2-.LFB14198
+	.uleb128 .LEHE2-.LEHB2
+	.uleb128 .L115-.LFB14198
+	.uleb128 0
+	.uleb128 .LEHB3-.LFB14198
+	.uleb128 .LEHE3-.LEHB3
+	.uleb128 .L114-.LFB14198
+	.uleb128 0
+	.uleb128 .LEHB4-.LFB14198
+	.uleb128 .LEHE4-.LEHB4
+	.uleb128 .L116-.LFB14198
+	.uleb128 0
+	.uleb128 .LEHB5-.LFB14198
+	.uleb128 .LEHE5-.LEHB5
+	.uleb128 .L117-.LFB14198
+	.uleb128 0
+	.uleb128 .LEHB6-.LFB14198
+	.uleb128 .LEHE6-.LEHB6
+	.uleb128 .L118-.LFB14198
+	.uleb128 0
+	.uleb128 .LEHB7-.LFB14198
+	.uleb128 .LEHE7-.LEHB7
+	.uleb128 .L117-.LFB14198
+	.uleb128 0
+	.uleb128 .LEHB8-.LFB14198
+	.uleb128 .LEHE8-.LEHB8
+	.uleb128 .L119-.LFB14198
+	.uleb128 0
+	.uleb128 .LEHB9-.LFB14198
+	.uleb128 .LEHE9-.LEHB9
+	.uleb128 .L117-.LFB14198
+	.uleb128 0
+	.uleb128 .LEHB10-.LFB14198
+	.uleb128 .LEHE10-.LEHB10
+	.uleb128 .L114-.LFB14198
+	.uleb128 0
+	.uleb128 .LEHB11-.LFB14198
+	.uleb128 .LEHE11-.LEHB11
+	.uleb128 .L113-.LFB14198
+	.uleb128 0
+	.uleb128 .LEHB12-.LFB14198
+	.uleb128 .LEHE12-.LEHB12
+	.uleb128 0
+	.uleb128 0
+	.uleb128 .LEHB13-.LFB14198
+	.uleb128 .LEHE13-.LEHB13
+	.uleb128 .L114-.LFB14198
+	.uleb128 0
+	.uleb128 .LEHB14-.LFB14198
+	.uleb128 .LEHE14-.LEHB14
+	.uleb128 .L120-.LFB14198
+	.uleb128 0
+	.uleb128 .LEHB15-.LFB14198
+	.uleb128 .LEHE15-.LEHB15
+	.uleb128 0
+	.uleb128 0
+.LLSDACSE14198:
+	.section	.text.startup
+	.size	main, .-main
+	.data
+	.align	4
+	.set	.LANCHOR0,. + 0
+	.type	_ZL14SOBEL_X_KERNEL, %object
+	.size	_ZL14SOBEL_X_KERNEL, 18
+_ZL14SOBEL_X_KERNEL:
+	.hword	-1
+	.hword	0
+	.hword	1
+	.hword	-2
+	.hword	0
+	.hword	2
+	.hword	-1
+	.hword	0
+	.hword	1
+	.zero	14
+	.type	_ZL14SOBEL_Y_KERNEL, %object
+	.size	_ZL14SOBEL_Y_KERNEL, 18
+_ZL14SOBEL_Y_KERNEL:
+	.hword	-1
+	.hword	-2
+	.hword	-1
+	.hword	0
+	.hword	0
+	.hword	0
+	.hword	1
+	.hword	2
+	.hword	1
+	.bss
+	.align	3
+	.set	.LANCHOR1,. + 0
+	.type	_ZStL8__ioinit, %object
+	.size	_ZStL8__ioinit, 1
+_ZStL8__ioinit:
+	.zero	1
+	.hidden	DW.ref.__gxx_personality_v0
+	.weak	DW.ref.__gxx_personality_v0
+	.section	.data.rel.local.DW.ref.__gxx_personality_v0,"awG",@progbits,DW.ref.__gxx_personality_v0,comdat
+	.align	3
+	.type	DW.ref.__gxx_personality_v0, %object
+	.size	DW.ref.__gxx_personality_v0, 8
+DW.ref.__gxx_personality_v0:
+	.xword	__gxx_personality_v0
+	.hidden	__dso_handle
+	.ident	"GCC: (Debian 12.2.0-14+deb12u1) 12.2.0"
+	.section	.note.GNU-stack,"",@progbits

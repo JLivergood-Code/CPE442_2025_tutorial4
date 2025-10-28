@@ -77,7 +77,10 @@ static inline void convolve3x3_rowptr(const cv::Mat& src, cv::Mat& dst,
                 prevRow[x-1]*kernel[0] + prevRow[x]*kernel[1] + prevRow[x+1]*kernel[2] +
                 currRow[x-1]*kernel[3] + currRow[x]*kernel[4] + currRow[x+1]*kernel[5] +
                 nextRow[x-1]*kernel[6] + nextRow[x]*kernel[7] + nextRow[x+1]*kernel[8];
+            // std::cout << "center point: " << currRow[x];
+            
             outRow[x] = sum;
+            // std::cout << "out point: " << outRow[x];
         }
     }
 
@@ -104,7 +107,7 @@ static inline void grayscale_calculation(const cv::Mat& bgr, cv::Mat& gray,int y
 
     auto end = high_resolution_clock::now();
     auto duration = duration_cast<milliseconds>(end - start).count();
-    std::cout << "Grayscale stage took " << duration << " ms\n";
+    // std::cout << "Grayscale stage took " << duration << " ms\n";
 }
 
 
