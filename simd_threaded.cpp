@@ -58,14 +58,14 @@ static inline void magnitude(const cv::Mat& gx32f, const cv::Mat& gy32f, cv::Mat
     }
 }
 
-static inline void convolve3x3_rowptr(const cv::Mat& src, cv::Mat& dst,
+static inline __attribute__((noinline)) void convolve3x3_rowptr(const cv::Mat& src, cv::Mat& dst,
                                       const int16_t kernel[9], int yStart, int yEnd){
     const int border = 1;
     const int rows = src.rows, cols = src.cols;
     const int ys = std::max(border, yStart); // Starting row, max to prevent clipping
     const int ye = std::min(rows - border, yEnd); // Ending row, min to prevent clipping
 
-    auto start = high_resolution_clock::now();
+    // auto start = high_resolution_clock::now();
 
     // Load the 3x3 kernel into NEON float32x4_t vectors
     int16x8_t k0 = vld1q_dup_s16(&kernel[0]); // broadcasted single-element loads
@@ -144,17 +144,17 @@ static inline void convolve3x3_rowptr(const cv::Mat& src, cv::Mat& dst,
         }
     }
 
-    auto end = high_resolution_clock::now();
-    auto duration = duration_cast<milliseconds>(end - start).count();
-    std::cout << "Convolve stage took " << duration << " ms\n";
+    // auto end = high_resolution_clock::now();
+    // auto duration = duration_cast<milliseconds>(end - start).count();
+    // std::cout << "Convolve stage took " << duration << " ms\n";
 }
 
-static inline void grayscale_calculation(const cv::Mat& bgr, cv::Mat& gray,int yStart, int yEnd){
+static inline __attribute__((noinline)) void grayscale_calculation(const cv::Mat& bgr, cv::Mat& gray,int yStart, int yEnd){
     const int rows = bgr.rows, cols = bgr.cols;
     const int ys = std::max(0, yStart);
     const int ye = std::min(rows, yEnd);
 
-    auto start = high_resolution_clock::now();
+    // auto start = high_resolution_clock::now();
 
     for (int y = ys; y < ye; ++y) {
         const uchar* in = bgr.ptr<uchar>(y);
@@ -188,8 +188,8 @@ static inline void grayscale_calculation(const cv::Mat& bgr, cv::Mat& gray,int y
         }
     }
 
-    auto end = high_resolution_clock::now();
-    auto duration = duration_cast<milliseconds>(end - start).count();
+    // auto end = high_resolution_clock::now();
+    // auto duration = duration_cast<milliseconds>(end - start).count();
     // std::cout << "Grayscale stage took " << duration << " ms\n";
 }
 
