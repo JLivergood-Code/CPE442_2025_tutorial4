@@ -22,6 +22,9 @@ CXXFLAGS ?= -O1 -Wall -Wextra -mcpu=cortex-a72 -march=armv8-a -ffast-math
 # Add OpenCV flags (no-op if pkg-config can't find it)
 CXXFLAGS += $(CXXSTD) $(shell pkg-config --cflags $(OPENCV_PKG))
 LDFLAGS  += $(shell pkg-config --libs   $(OPENCV_PKG))
+CXXFLAGS += -I/usr/local/include
+LDFLAGS += -L/usr/local/lib -lpapi
+
 
 # Automated
 

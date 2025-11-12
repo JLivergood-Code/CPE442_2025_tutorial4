@@ -2,11 +2,13 @@
 #include <pthread.h>
 #include <atomic>
 #include <iostream>
+#include <cstdio>
 #include <cctype>
 #include <algorithm>
 #include <math.h>
 #include <arm_neon.h>
 #include <chrono>
+#include <papi.h>
 
 using namespace std::chrono;
 
@@ -240,6 +242,52 @@ int main(int argc, char** argv){
         return 1; 
     }
 
+    // SETS UP PAPI
+    int EventSet_Sobel = PAPI_NULL;
+    int EventSet_Grey = PAPI_NULL;
+    long long values[2][3]; // Array to store event values (e.g., PAPI_REAL_USEC)
+    long long avg_sobel = 0;
+    long long avg_sobel_l1dcm = 0;
+    // long long avg_sobel_l2dcm = 0;
+    long long avg_grey = 0;
+    long long avg_grey_l1dcm = 0;
+    // long long avg_grey_l2dcm = 0;
+    long long num_events = 0;
+    int retval;
+
+    retval = PAPI_library_init(PAPI_VER_CURRENT);
+    if (retval != PAPI_VER_CURRENT && retval < 0) {
+        fprintf(stderr, "PAPI library init error: %s\n", PAPI_strerror(retval));
+        return 1;
+    }
+
+    retval = PAPI_create_eventset(&EventSet_Sobel);
+    if (retval != PAPI_OK) {
+        fprintf(stderr, "PAPI create eventset error: %s\n", PAPI_strerror(retval));
+        return 1;
+    }
+    retval = PAPI_create_eventset(&EventSet_Grey);
+    if (retval != PAPI_OK) {
+        fprintf(stderr, "PAPI create eventset error: %s\n", PAPI_strerror(retval));
+        return 1;
+    }
+
+    retval = PAPI_add_event(EventSet_Sobel, PAPI_TOT_CYC);
+    retval = PAPI_add_event(EventSet_Sobel, PAPI_L1_DCM);
+    // retval = PAPI_add_event(EventSet_Sobel, PAPI_L2_DCM);
+    if (retval != PAPI_OK) {
+        fprintf(stderr, "PAPI add event error sobel: %s\n", PAPI_strerror(retval));
+        return 1;
+    }
+    retval = PAPI_add_event(EventSet_Grey, PAPI_TOT_CYC);
+    retval = PAPI_add_event(EventSet_Grey, PAPI_L1_DCM);
+    // retval = PAPI_add_event(EventSet_Sobel, PAPI_L2_DCM);
+    if (retval != PAPI_OK) {
+        fprintf(stderr, "PAPI add event error grey: %s\n", PAPI_strerror(retval));
+        return 1;
+    }
+
+
     cv::VideoCapture cap; 
     if(std::isdigit(argv[1][0])) cap.open(std::stoi(argv[1]));
     else cap.open(argv[1]);
@@ -288,11 +336,14 @@ int main(int argc, char** argv){
     
         // ---- Stage 1: Parallel GRAYSCALE ----
         job.currentStage.store(ComputeStages::GRAY_SCALE, std::memory_order_release); //Thread safe stage changing
+        PAPI_start(EventSet_Grey);
         pthread_barrier_wait(&job.startBarrier);
         pthread_barrier_wait(&job.endBarrier);
-    
+        PAPI_stop(EventSet_Grey, values[0]);
+
         // ---- Stage 2: Parallel SOBEL X ----
         job.currentStage.store(ComputeStages::SOBEL_X, std::memory_order_release); //Thread safestage changing
+        PAPI_start(EventSet_Sobel);
         pthread_barrier_wait(&job.startBarrier);
         pthread_barrier_wait(&job.endBarrier);
     
@@ -305,10 +356,26 @@ int main(int argc, char** argv){
         job.currentStage.store(ComputeStages::MAGNITUDE, std::memory_order_release); //Thread safe stage changing
         pthread_barrier_wait(&job.startBarrier);
         pthread_barrier_wait(&job.endBarrier);
+        PAPI_stop(EventSet_Sobel, values[1]);
+
+        // add to running totals
+        avg_sobel += values[1][0];
+        avg_sobel_l1dcm += values[1][1];
+        // avg_sobel_l2dcm += values[1][2];
+        avg_grey += values[0][0];
+        avg_grey_l1dcm += values[0][1];
+        // avg_grey_l2dcm += values[1][2];
+        num_events += 1;
+
+        // reset the Event Sets
+        PAPI_reset(EventSet_Grey);
+        PAPI_reset(EventSet_Sobel);
 
         // Combine results & display
         mag32f.convertTo(mag8u, CV_8U, 0.5);
         cv::imshow("Sobel", mag8u);
+
+        
 
         // Close Window
         int key = cv::waitKey(1);             
@@ -324,6 +391,25 @@ int main(int argc, char** argv){
     for (int i = 0; i < NUM_THREADS; ++i) pthread_join(threads[i], nullptr);
     pthread_barrier_destroy(&job.startBarrier);
     pthread_barrier_destroy(&job.endBarrier);
+    
+
+    avg_sobel /= num_events;
+    avg_grey /= num_events;
+
+    avg_grey_l1dcm /= num_events;
+    // avg_grey_l2dcm /= num_events;
+    avg_sobel_l1dcm /= num_events;
+    // avg_sobel_l2dcm /= num_events;
+
+    // avg_sobel /= num_events;
+    // avg_grey /= num_events;
+
+    std::cout << "\nGreyscale | Time (Cycles): " << avg_grey << " | L1 Cache Miss: " << avg_grey_l1dcm; // << "L2 Cache Miss: " << avg_grey_l2dcm << "\n";
+    std::cout << "\nSobel | Time (Cycles): " << avg_sobel << " | L1 Cache Miss: " << avg_sobel_l1dcm << "\n"; // << "L2 Cache Miss: " << avg_sobel_l2dcm << "\n";
+    
+
+    PAPI_shutdown();
+
     return 0;
 }
 
